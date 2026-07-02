@@ -1,7 +1,7 @@
 ---
 name: unsiloed-extract
 description: Guided document data extraction with human-in-the-loop review, powered by Unsiloed AI. Use when the user points at a document (PDF, scan, photo, DOCX, XLSX) and wants specific fields pulled out of it — names, totals, dates, ID numbers, line items — especially when they want to choose the fields interactively, pick an output format (JSON, CSV, Markdown), or verify low-confidence values against an annotated copy of the document before trusting them. Trigger phrases include "extract the data from this document", "pull the fields from this invoice", "get the totals and dates out of this PDF", "extract this with verification".
-version: 1.0.0
+version: 1.1.0
 required_environment_variables:
   - name: UNSILOED_API_KEY
     prompt: Unsiloed API key

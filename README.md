@@ -36,6 +36,17 @@ curl -fsSL https://raw.githubusercontent.com/LewisDwyer/unsiloed-extract-skill/m
 - `UNSILOED_API_KEY` — get one from the [Unsiloed dashboard](https://unsiloed.ai). Hermes prompts for it on first load; otherwise export it or put it in a `.env`.
 - Optional, for the annotated review image: Python 3 with `pymupdf`/`Pillow`, or `pdftoppm`, or ImageMagick (the skill falls back to text descriptions without them)
 
+## Troubleshooting (Hermes)
+
+**The agent "runs" the skill instantly and describes results, but no output file exists.**
+It's role-playing: it has no execution tools, so it narrates tool calls in prose and invents plausible results. Check `agent.disabled_toolsets` in `~/.hermes/config.yaml` — the skill needs `skills` (to load at all) and a shell (`code_execution` or `terminal`) enabled; `clarify` (interactive questions) and `vision` (field suggestions from the document) make the flow work as designed. You can confirm from `~/.hermes/logs/agent.log`: a turn with a tiny `in=` token count and `tool_turns=0` never called any tools.
+
+**How to tell a run was real:** the agent asks the field/format/HITL questions before extracting, quotes a `job_id`, the extraction takes ~30 s to several minutes, and the raw response JSON it cites actually exists on disk.
+
+**The agent can't find the API key.** Put `UNSILOED_API_KEY` in Hermes's secrets store (`hermes setup`, or its `.env` file in the Hermes home directory) — Hermes passes it through to its execution sandboxes. There is no per-skill config file.
+
+**Install blocked by the security scanner.** Versions before 1.1.0 tripped Hermes's `env_exfil_curl` rule (secret-named variable on a curl line). Current versions scan `safe`; if you see a `dangerous` verdict, make sure you're installing the latest commit.
+
 ## Related
 
 - [`LewisDwyer/unsiloed-skill`](https://github.com/LewisDwyer/unsiloed-skill) — general-purpose Unsiloed skill (parse / extract / classify / split) for OpenClaw
