@@ -25,7 +25,13 @@ This skill is pure instructions: everything runs through `curl` and whatever ima
 - `UNSILOED_API_KEY` in the environment. If unset, check for a `.env` in the working directory and source it; otherwise ask the user for the key. Never echo the key back.
 - For the HITL annotated image (optional, with graceful fallback): any one of Python 3 with `pymupdf`/`Pillow`, `pdftoppm` (poppler), or ImageMagick.
 
-API base is `https://prod.visionapi.unsiloed.ai`. Every call sends the key as an `api-key` header. Accepted inputs: PDF, PNG, JPEG, TIFF, BMP, DOCX, XLSX, PPTX.
+API base is `https://prod.visionapi.unsiloed.ai`. Every call authenticates with an `api-key` header carrying `UNSILOED_API_KEY`. Build that header string once per session and reuse it in every call:
+
+```bash
+UNSILOED_AUTH="api-key: $UNSILOED_API_KEY"
+```
+
+Accepted inputs: PDF, PNG, JPEG, TIFF, BMP, DOCX, XLSX, PPTX.
 
 ## When to Use
 
@@ -79,14 +85,14 @@ Then submit and poll. Always pass `enable_citations=true` (it adds per-field bou
 SCHEMA='<SCHEMA-JSON>'   # single-quote so the schema's double quotes survive
 
 JOB=$(curl -s -X POST https://prod.visionapi.unsiloed.ai/v2/extract \
-  -H "api-key: $UNSILOED_API_KEY" \
+  -H "$UNSILOED_AUTH" \
   -F "pdf_file=@<FILE-PATH>" \
   -F "schema_data=$SCHEMA" \
   -F "model=gamma" \
   -F "enable_citations=true" | jq -r '.job_id')
 
 for _ in $(seq 60); do   # 60 × 5s = 300s cap
-  R=$(curl -s "https://prod.visionapi.unsiloed.ai/extract/$JOB" -H "api-key: $UNSILOED_API_KEY")
+  R=$(curl -s "https://prod.visionapi.unsiloed.ai/extract/$JOB" -H "$UNSILOED_AUTH")
   S=$(echo "$R" | jq -r '.status')
   [ "$S" = "completed" ] && break
   [ "$S" = "failed" ] && { echo "$R" | jq -r '.error' >&2; break; }
