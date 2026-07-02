@@ -60,6 +60,8 @@ If they ask for suggestions, build the list by looking at the document directly 
 
 Present suggestions as a numbered list so the user can reply "1, 3, 4 plus purchase order number" — always invite additions of their own. Confirm the final field list back in one line before moving on. The flow is strict: prompt for fields → user asks for suggestions → list suggested fields → user selects and/or adds their own → only then build the schema and extract.
 
+**One record or many?** A scalar field returns exactly one value for the whole document, no matter how many pages it has. When the document is multi-page and the chosen fields could plausibly repeat (one per page, per line item, per test, per person), ask which the user wants — "this file has N pages; do you want the patient name once, or one row per test result?" — and model repeating fields as an array of objects (Step 4). Getting one value back from a 20-page document is the expected result of a scalar schema, not a truncated run.
+
 ### Step 2 — Output format
 
 Ask where the values should land. Sensible menu (pick defaults by shape of the data):
@@ -169,7 +171,8 @@ If no rendering tooling exists on the machine, fall back to text: give each fiel
 Before calling the task done, confirm:
 
 1. The job reached `completed` and the full raw response is saved next to the source document. Quote the `job_id` and the saved file path in your delivery — they are the proof the run happened. Real jobs take from ~30 seconds to several minutes on dense documents; if the "extraction" finished instantly, no API call was made and nothing may be reported from it.
-2. Every agreed field appears in the delivered output (with `null` — not a guess — where nothing was found).
-3. Scores were read from the nested object and any `__value__` wrappers were unwrapped (no silently-null values that the raw JSON shows as populated).
-4. If HITL was on: every below-threshold field was either confirmed or amended by the user, and the delivered output reflects the amendments.
-5. The delivered format matches what the user picked in Step 2.
+2. State the document's page count in the delivery (the response `metadata.page_count` has it) so a one-value result on a long document reads as "one record found across 19 pages", not as a partial run.
+3. Every agreed field appears in the delivered output (with `null` — not a guess — where nothing was found).
+4. Scores were read from the nested object and any `__value__` wrappers were unwrapped (no silently-null values that the raw JSON shows as populated).
+5. If HITL was on: every below-threshold field was either confirmed or amended by the user, and the delivered output reflects the amendments.
+6. The delivered format matches what the user picked in Step 2.
