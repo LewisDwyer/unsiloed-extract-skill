@@ -22,7 +22,7 @@ This skill is pure instructions: everything runs through `curl` and whatever ima
 ## Requirements
 
 - `curl` and `jq` on the PATH.
-- `UNSILOED_API_KEY` in the environment. If unset, check for a `.env` in the working directory and source it; otherwise ask the user for the key (on Hermes it belongs in `~/.hermes/.env`; on other frameworks, export it or use the framework's secrets store). Those are the only places to look — the skill has no config file of its own. Never echo the key back.
+- `UNSILOED_API_KEY` in the environment. If unset, check for a `.env` in the working directory and source it; otherwise ask the user to provide the key or to add it to their framework's secrets store (`hermes setup` on Hermes; an exported variable elsewhere). Those are the only places it lives — the skill has no config file of its own, so don't go hunting for one. Never echo the key back.
 - For the HITL annotated image (optional, with graceful fallback): any one of Python 3 with `pymupdf`/`Pillow`, `pdftoppm` (poppler), or ImageMagick.
 
 API base is `https://prod.visionapi.unsiloed.ai`. Every call authenticates with an `api-key` header carrying `UNSILOED_API_KEY`. Build that header string once per session and reuse it in every call:
