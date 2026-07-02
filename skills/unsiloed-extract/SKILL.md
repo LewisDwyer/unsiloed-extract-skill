@@ -43,7 +43,14 @@ Do not read the document with your own vision and answer from that. Vision-readi
 
 ## Procedure
 
+When the skill starts, tell the user the flow in one line — `Fields → Output format → HITL → Extract → Review` — and then ask the Step 1 question. As you work, open each step by naming it ("**Step 4 — running the extraction** (job `abc123`)…") so the user always knows where in the flow they are.
+
 Ask the Step 1–3 questions with the framework's native question mechanism if it has one (e.g. AskUserQuestion in Claude Code; a plain chat message in Hermes). Ask, then wait. Never invent the user's answer, and never run the extraction before the fields are agreed.
+
+Two iron rules, before anything else:
+
+- **Every command in this skill is a real command to execute with your shell tool.** Never narrate, simulate, or describe a step as done — no "[uploading to the API…]" prose in place of a tool call. If you have no shell tool available, stop and tell the user this skill can't run here.
+- **No results without receipts.** Anything you report to the user must come out of the saved raw response file, and you must quote the `job_id` and the file path when you deliver. If that file does not exist on disk, the extraction did not happen — say so instead of describing what the document "probably" contains. Inventing document contents is the exact failure this skill exists to prevent.
 
 ### Step 1 — Fields
 
@@ -161,7 +168,7 @@ If no rendering tooling exists on the machine, fall back to text: give each fiel
 
 Before calling the task done, confirm:
 
-1. The job reached `completed` and the full raw response is saved next to the source document.
+1. The job reached `completed` and the full raw response is saved next to the source document. Quote the `job_id` and the saved file path in your delivery — they are the proof the run happened. Real jobs take from ~30 seconds to several minutes on dense documents; if the "extraction" finished instantly, no API call was made and nothing may be reported from it.
 2. Every agreed field appears in the delivered output (with `null` — not a guess — where nothing was found).
 3. Scores were read from the nested object and any `__value__` wrappers were unwrapped (no silently-null values that the raw JSON shows as populated).
 4. If HITL was on: every below-threshold field was either confirmed or amended by the user, and the delivered output reflects the amendments.
