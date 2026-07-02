@@ -1,4 +1,4 @@
-# unsiloed-extract
+# unsiloed-hitl-extract
 
 A Markdown-only agent skill for guided document data extraction with human-in-the-loop review, powered by the [Unsiloed AI](https://unsiloed.ai) document-processing API.
 
@@ -15,19 +15,19 @@ The skill follows the [agentskills.io](https://agentskills.io) open standard: a 
 **Hermes:**
 
 ```bash
-hermes skills install LewisDwyer/unsiloed-extract-skill/skills/unsiloed-extract
+hermes skills install LewisDwyer/unsiloed-extract-skill/skills/unsiloed-hitl-extract
 ```
 
-or in a chat session: `/skills install LewisDwyer/unsiloed-extract-skill/skills/unsiloed-extract`
+or in a chat session: `/skills install LewisDwyer/unsiloed-extract-skill/skills/unsiloed-hitl-extract`
 
-Manual: copy `skills/unsiloed-extract/` into `~/.hermes/skills/documents/`.
+Manual: copy `skills/unsiloed-hitl-extract/` into `~/.hermes/skills/documents/`.
 
 **Claude Code:**
 
 ```bash
-mkdir -p ~/.claude/skills/unsiloed-extract
-curl -fsSL https://raw.githubusercontent.com/LewisDwyer/unsiloed-extract-skill/main/skills/unsiloed-extract/SKILL.md \
-  -o ~/.claude/skills/unsiloed-extract/SKILL.md
+mkdir -p ~/.claude/skills/unsiloed-hitl-extract
+curl -fsSL https://raw.githubusercontent.com/LewisDwyer/unsiloed-extract-skill/main/skills/unsiloed-hitl-extract/SKILL.md \
+  -o ~/.claude/skills/unsiloed-hitl-extract/SKILL.md
 ```
 
 ## Requirements

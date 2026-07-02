@@ -1,7 +1,7 @@
 ---
-name: unsiloed-extract
+name: unsiloed-hitl-extract
 description: Guided document data extraction with human-in-the-loop review, powered by Unsiloed AI. Use when the user points at a document (PDF, scan, photo, DOCX, XLSX) and wants specific fields pulled out of it — names, totals, dates, ID numbers, line items — especially when they want to choose the fields interactively, pick an output format (JSON, CSV, Markdown), or verify low-confidence values against an annotated copy of the document before trusting them. Trigger phrases include "extract the data from this document", "pull the fields from this invoice", "get the totals and dates out of this PDF", "extract this with verification".
-version: 1.1.0
+version: 1.2.0
 required_environment_variables:
   - name: UNSILOED_API_KEY
     prompt: Unsiloed API key
@@ -88,7 +88,7 @@ Build a JSON Schema from the agreed fields:
 - `additionalProperties: false` on every object level.
 - Mark a field `required` only when it is reliably present on this kind of document. A `required` field the model can't find pressures it to guess — leave optional fields out of `required` so a missing value comes back `null` instead of invented.
 
-Then submit and poll. Always pass `enable_citations=true` (it adds per-field bounding boxes and real nested scores) and default to `model=gamma`:
+Then submit and poll. Always pass `enable_citations=true` (it adds per-field bounding boxes and real nested scores) and use `model=gamma`:
 
 ```bash
 SCHEMA='<SCHEMA-JSON>'   # single-quote so the schema's double quotes survive
@@ -156,15 +156,6 @@ Collect every field with confidence below the threshold (default 0.97), includin
 If no rendering tooling exists on the machine, fall back to text: give each field's page number and describe roughly where the box sits on the page (from the bbox relative to the page size, e.g. "top-left letterhead area").
 
 **Accept or amend.** Ask the user to go through the numbered items and either accept or correct each — invite the compact reply form: "1 ok, 2 = 4,500.00, 3 ok, 4 not on doc". Apply their corrections, then rebuild the final output in the agreed format. In your closing summary state which fields were human-amended, which were human-confirmed, and which were auto-accepted at or above the threshold. Do not put review metadata inside the output file unless the user asks for it.
-
-## Pitfalls
-
-- **`model=alpha` can return silently empty on scanned photos** (score 0, no error) — that's why this skill defaults to `gamma`. If gamma comes back empty on a document that clearly has the data, retry once with `alpha` before reporting failure.
-- **Oversized images fail silently.** ~9 MP and up returns empty values with no error. Downscale first (Step 4).
-- **Don't mix coordinate systems.** `/parse` segment/word boxes use a different scale (144 DPI, left/top/width/height, word boxes relative to their segment) than `/v2/extract` citations (PDF points, x1/y1/x2/y2). This skill only needs the citation convention.
-- **The score is a triage gate, not a lie detector.** Genuinely wrong values have scored 0.95–0.98 (confident-and-wrong). The threshold catches most cleanly-attributable errors; it does not guarantee the rest. Where the data allows a deterministic cross-check (line items sum to the total, dates in range), run it and flag mismatches regardless of score. If the user needs full recall on catchable errors, offer a 0.99 threshold and say the review burden will rise.
-- **Shell-quoting the schema.** Wrap `SCHEMA` in single quotes; a double-quoted schema gets its inner quotes eaten and the API rejects it.
-- **Multi-page documents go through whole.** No pre-splitting needed. Use the citation's `page` to annotate the right page.
 
 ## Verification
 
