@@ -144,14 +144,17 @@ Collect every field with confidence below the threshold (default 0.97), includin
 
 **If more than 10:** stop before reviewing. Warn the user that the document appears to be low quality (or the threshold is stricter than this scan can support), show the score distribution in one line (e.g. "31 fields total: 12 ≥ 0.97, 11 between 0.90–0.97, 8 below 0.90"), and ask whether they want to lower the threshold — suggest the highest value that leaves ≤10 fields to review — or press on and review everything. Recompute the review set with whatever they choose.
 
+**If the scores bunch in a narrow band straddling the threshold** (e.g. most of the document sits between 0.95 and 0.98), say so before negotiating a number: a cutoff inside the band selects an arbitrary slice of near-identical scores, not the risky fields. Point the review at the *outliers* — nulls and anything scoring well below the band — and tell the user the in-band fields are statistically indistinguishable from each other rather than individually suspect.
+
 **Review table.** Show the low-confidence fields as a numbered table: `# | field | extracted value | confidence | page`.
 
 **Annotated document.** Produce a copy of the cited pages with a numbered box per low-confidence field so the user can eyeball each value in place. The recipe, with any tooling available (Python + pymupdf/Pillow shown; `pdftoppm` + ImageMagick work the same way):
 
 1. Rasterize each page that has at least one low-confidence citation (150 DPI is plenty).
 2. For each citation on that page, scale: `px = x * rendered_width / citation.page_width` (same for y with heights). Use the citation's own `page_width`/`page_height` — do not assume the page size.
-3. Draw a red rectangle at `[x1, y1, x2, y2]`, padded ~3 points on every side, with the review-table number drawn next to it.
-4. Save as `<docname>-review-p<page>.png` next to the source document, and show/attach the image(s) however the framework displays files. Fields with `citation: null` get no box — say so in the table ("not located on the document").
+3. Draw a red rectangle at `[x1, y1, x2, y2]`, padded ~6 points on every side (citations can sit up to half a line off on skewed or creased scans — the padding absorbs that), with the review-table number drawn next to it.
+4. Fields with `citation: null` (usually illegible/not-found values) still deserve a marker when their location can be inferred: if sibling rows have citations for the same column, draw a **dashed amber box** at the inferred cell — x-range from the column's other citations, y interpolated between the neighbouring rows' boxes — labelled with the item number. These are often the most important review items (something is *on* the document there that the model couldn't read), so don't leave them invisible. If the location genuinely can't be inferred, note it in the table ("not located on the document").
+5. Save as `<docname>-review-p<page>.png` next to the source document, and show/attach the image(s) however the framework displays files.
 
 If no rendering tooling exists on the machine, fall back to text: give each field's page number and describe roughly where the box sits on the page (from the bbox relative to the page size, e.g. "top-left letterhead area").
 
